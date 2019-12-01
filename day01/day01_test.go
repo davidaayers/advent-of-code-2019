@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"io/ioutil"
+	"testing"
+)
 
 // go test -timeout 30s day01 -run '^(TestCalcFuelIncludingWeightOfFuel)$'
 
@@ -34,10 +37,27 @@ func TestCalcFuel(t *testing.T) {
 
 func TestCalcFuelIncludingWeightOfFuel(t *testing.T) {
 	for _, testCase := range testCases2 {
-		result := CalcFuelIncludingWeightOfFuel(testCase.moduleWeight,0)
+		result := CalcFuelIncludingWeightOfFuel(testCase.moduleWeight)
 		if result != testCase.expectedFuel {
 			t.Errorf("Error, expected %d fuel, got %d", testCase.expectedFuel, result)
 		}
 	}
 }
 
+func TestPart1(t *testing.T) {
+	bytes, _ := ioutil.ReadFile("input.txt")
+	expected := "Answer 3219099"
+	answer := Part1(string(bytes))
+	if answer != expected {
+		t.Errorf("Error, expected %s got %s", expected, answer)
+	}
+}
+
+func TestPart2(t *testing.T) {
+	bytes, _ := ioutil.ReadFile("input.txt")
+	expected := "Answer 4825810"
+	answer := Part2(string(bytes))
+	if answer != expected {
+		t.Errorf("Error, expected %s got %s", expected, answer)
+	}
+}

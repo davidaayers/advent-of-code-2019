@@ -7,19 +7,21 @@ import (
 	"strings"
 )
 
-// CalcFuel Calculate the fuel equired for oe module
+// CalcFuel Calculate the fuel required for one module
 func CalcFuel(weight int) int {
 	return weight / 3 - 2
 }
 
-func CalcFuelIncludingWeightOfFuel(weight,lastWeight int) int {
+// CalcFuelIncludingWeightOfFuel Calculate the fuel required for 
+// one module, including the weight of the fuel itself
+func CalcFuelIncludingWeightOfFuel(weight int) int {
 	fuel := CalcFuel(weight)
 
 	if fuel <= 0 {
-		return lastWeight
+		return 0
 	}
 
-	return CalcFuelIncludingWeightOfFuel(fuel,lastWeight+fuel)
+	return fuel + CalcFuelIncludingWeightOfFuel(fuel)
 }
 
 // Part1 Part 1 of puzzle
@@ -40,7 +42,7 @@ func Part2(input string) string {
 
 	for _, s := range strings.Split(input, "\r\n") {
 		w, _ := strconv.Atoi(s) 
-		totalFuel += CalcFuelIncludingWeightOfFuel(w,0)
+		totalFuel += CalcFuelIncludingWeightOfFuel(w)
 	}
 
 	return "Answer " + strconv.Itoa(totalFuel)
