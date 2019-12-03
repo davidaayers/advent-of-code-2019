@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	//"strconv"
-	//"strings"
+	"strconv"
+	"strings"
 )
 
 
@@ -27,7 +27,20 @@ func RunIntCode(code []int) {
 
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
-	return "Answer"
+	strs := strings.Split(strings.ReplaceAll(input,"\r\n",""),",")
+	intCode := make([]int, len(strs))
+	for idx, s := range strs {
+		i, _ := strconv.Atoi(s) 
+		intCode[idx] = i
+	}
+
+	// per the puzzle description
+	intCode[1] = 12
+	intCode[2] = 2
+
+	RunIntCode(intCode)
+
+	return "Answer: " + strconv.Itoa(intCode[0])
 }
 
 // Part2 Part2 of puzzle

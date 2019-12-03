@@ -45,7 +45,6 @@ func Equal(a, b []int) bool {
 }
 
 func TestRunIntCode(t *testing.T) {
-	
 	for _, testCase := range testCases {
 		RunIntCode(testCase.startingCode)
 		if !Equal(testCase.startingCode,testCase.endingCode) {
@@ -56,7 +55,7 @@ func TestRunIntCode(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
-	expected := "Answer"
+	expected := "Answer: 4484226"
 	answer := Part1(string(bytes))
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
