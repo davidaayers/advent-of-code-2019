@@ -7,6 +7,10 @@ import (
 	//"strings"
 )
 
+func FindClosestIntersectionDistance(wire1Path,wire2Path []string) int {
+	return 0
+}
+
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
 	return "Answer: "
