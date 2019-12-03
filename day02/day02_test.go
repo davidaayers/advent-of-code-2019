@@ -32,6 +32,20 @@ var testCases = []struct {
 	},
 }
 
+var testCases2 = []struct {
+	input string
+	expected []int
+} {
+	{
+		"1,2,3,4",
+		[]int{1,2,3,4},
+	},
+	{
+		"1,2,3,4\r\n",
+		[]int{1,2,3,4},
+	},
+}
+
 func Equal(a, b []int) bool {
     if len(a) != len(b) {
         return false
@@ -53,6 +67,15 @@ func TestRunIntCode(t *testing.T) {
 	}
 }
 
+func TestParseIntCode(t *testing.T) {
+	for _, testCase := range testCases2 {
+		parsed := ParseIntCode(testCase.input)
+		if !Equal(parsed, testCase.expected) {
+			t.Errorf("Error, expected %v got %v", testCase.expected, parsed)	
+		}
+	}
+}
+
 func TestPart1(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
 	expected := "Answer: 4484226"
@@ -64,7 +87,7 @@ func TestPart1(t *testing.T) {
 
 func TestPart2(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
-	expected := "Answer"
+	expected := "Answer: 5696"
 	answer := Part2(string(bytes))
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
