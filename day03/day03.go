@@ -3,10 +3,19 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	//"math"
+	"sort"
 	"strconv"
-	//"strings"
+	"strings"
 )
+
+var dirs = map[string][]int{
+	"U": {0,-1},
+	"D": {0,1},
+	"L": {-1,0},
+	"R": {1,0},
+}
+
+var zero = Point{0,0}
 
 type Point struct {
 	x,y int
@@ -20,7 +29,7 @@ type Wire struct {
 	points []Point
 } 
 
-func (w Wire) AddPoint(p Point) {
+func (w *Wire) AddPoint(p Point) {
 	w.points = append(w.points,p)
 }
 
@@ -37,7 +46,7 @@ func (w Wire) Intersections(other Wire) []Point {
 	intersections := make([]Point,0)
 
 	for _,p := range(other.points) {
-		if w.ContainsPoint(p) {
+		if w.ContainsPoint(p) && p != zero {
 			intersections = append(intersections,p)
 		}
 	}
@@ -50,35 +59,19 @@ func NewWire() Wire {
 }
 
 func MakeWire(wirePath []string) Wire {
-	wire := Wire{}
+	wire := NewWire()
 
-	lastPoint := Point{0,0}
+	lastPoint := zero
 
 	wire.AddPoint(lastPoint)
 
 	for _,i := range(wirePath) {
 		dir := i[:1]
 		steps,_ := strconv.Atoi(i[1:])
-		xd := 0
-		yd := 0
-
-		switch (string(dir)) {
-		case "U":
-			yd = -1
-		case "D":
-			yd = 1
-		case "L":
-			xd = -1
-		case "R":
-			xd = 1
-		}
-
-		fmt.Printf("i: %v Dir: %v xd: %v yd: %v steps: %v\n", i,dir,xd,yd,steps)
-
-		for cnt := 0; cnt == steps; cnt ++ {
+		for cnt := 0; cnt != steps; cnt ++ {
 			nextPoint := lastPoint
-			nextPoint.x += xd
-			nextPoint.y += yd
+			nextPoint.x += dirs[dir][0]
+			nextPoint.y += dirs[dir][1]
 			lastPoint = nextPoint
 			wire.AddPoint(nextPoint)
 		}
@@ -95,23 +88,20 @@ func Abs(a int) int {
 }
 
 func FindClosestIntersectionDistance(wire1Path,wire2Path []string) int {
-
 	wire1 := MakeWire(wire1Path)
-	fmt.Printf("Wire1: %v\n", wire1)
-
 	wire2 := MakeWire(wire2Path)
-	fmt.Printf("Wire2: %v\n", wire2)
 
 	intersections := wire1.Intersections(wire2)
+	sort.Slice(intersections, func(i, j int) bool { return zero.ManhattanDistanceTo(intersections[i]) < zero.ManhattanDistanceTo(intersections[j]) })
 
-	fmt.Printf("Intersections: %v\n", intersections)
-
-	return 0
+	return zero.ManhattanDistanceTo(intersections[0])
 }
 
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
-	return "Answer: "
+	wires := strings.Split(strings.ReplaceAll(input,"\r\n","\n"),"\n")
+	answer := FindClosestIntersectionDistance(strings.Split(wires[0],","),strings.Split(wires[1],","))
+	return "Answer: " + strconv.Itoa(answer)
 }
 
 // Part2 Part2 of puzzle
