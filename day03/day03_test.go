@@ -50,7 +50,7 @@ func TestFindClosestIntersectionDistanceBySteps(t *testing.T) {
 	}
 }
 
-// go test -timeout 30s day03 -run '^(TestRunIntCode)$'
+// go test -timeout 30s day03 -run '^(TestPart1)$'
 func TestPart1(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
 	expected := "Answer: 489"
@@ -60,6 +60,7 @@ func TestPart1(t *testing.T) {
 	}
 }
 
+// go test -timeout 30s day03 -run '^(TestPart2)$'
 func TestPart2(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
 	expected := "Answer: 93654"

@@ -1,3 +1,3 @@
-module day04
+module dayXX
 
 go 1.13
