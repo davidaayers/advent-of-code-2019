@@ -1,15 +1,14 @@
 package main
 
 import (
-	"io/ioutil"
 	"testing"
 )
 
 // go test -timeout 30s day03 -run '^(TestPart1)$'
 func TestPart1(t *testing.T) {
-	bytes, _ := ioutil.ReadFile("input.txt")
+	start,end := 197487,673251
 	expected := "Answer: "
-	answer := Part1(string(bytes))
+	answer := Part1(start,end)
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
 	}
@@ -17,9 +16,9 @@ func TestPart1(t *testing.T) {
 
 // go test -timeout 30s day03 -run '^(TestPart2)$'
 func TestPart2(t *testing.T) {
-	bytes, _ := ioutil.ReadFile("input.txt")
+	start,end := 197487,673251
 	expected := "Answer: "
-	answer := Part2(string(bytes))
+	answer := Part2(start,end)
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
 	}
