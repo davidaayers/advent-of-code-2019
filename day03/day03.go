@@ -97,6 +97,37 @@ func FindClosestIntersectionDistance(wire1Path,wire2Path []string) int {
 	return zero.ManhattanDistanceTo(intersections[0])
 }
 
+func StepsToPoint(wire Wire, point Point) int {
+	for i,p := range(wire.points) {
+		if p == point {
+			return i
+		}
+	}
+
+	return 0
+}
+
+func FindClosestIntersectionDistanceBySteps(wire1Path,wire2Path []string) int {
+	wire1 := MakeWire(wire1Path)
+	wire2 := MakeWire(wire2Path)
+
+	intersections := wire1.Intersections(wire2)
+
+	stepCounts := make([]int,0)
+
+	// now go through each intersection and find the one with the least number of steps
+	for _,intersection := range(intersections) {
+		stepsWire1 := StepsToPoint(wire1,intersection)
+		stepsWire2 := StepsToPoint(wire2,intersection)
+		stepCounts = append(stepCounts,stepsWire1+stepsWire2)
+	}
+
+	sort.Ints(stepCounts)
+
+	return stepCounts[0]
+}
+
+
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
 	wires := strings.Split(strings.ReplaceAll(input,"\r\n","\n"),"\n")
@@ -106,7 +137,9 @@ func Part1(input string) string {
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	wires := strings.Split(strings.ReplaceAll(input,"\r\n","\n"),"\n")
+	answer := FindClosestIntersectionDistanceBySteps(strings.Split(wires[0],","),strings.Split(wires[1],","))
+	return "Answer: " + strconv.Itoa(answer)
 }
 
 func main() {
