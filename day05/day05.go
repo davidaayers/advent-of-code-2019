@@ -13,6 +13,10 @@ var opCodeLengths = map[int]int{
 	2:4,
 	3:2,
 	4:2,
+	5:3,
+	6:3,
+	7:4,
+	8:4,
 }
 
 // RunIntCode Our intCode interpreter
@@ -35,6 +39,8 @@ func RunIntCode(code []int,input int) []int {
 		} 
 		
 		if opCode == 1 || opCode == 2 {
+			// Opcode `1` adds together numbers read from two positions and stores the result in a third position.
+			// Opcode `2` works exactly like opcode `1`, except it multiplies the two inputs instead of adding them.
 			param1 := code[idx+1]
 			if param1PositionMode {
 				param1 = code[code[idx+1]]
@@ -47,25 +53,68 @@ func RunIntCode(code []int,input int) []int {
 
 			if opCode == 1 {
 				code[code[idx+3]] = param1 + param2	
-			} else {
+			} else if opCode == 2 {
 				code[code[idx+3]] = param1 * param2	
 			}
 
 			fmt.Printf(" Param1: %v Param2: %v Result: %v Stored in: %v\n",param1,param2,code[code[idx+3]],code[idx+3])
-
 		} else if opCode == 3 {
+			// Opcode `3` takes a single integer as input and saves it to the address given by its only parameter.
 			code[code[idx+1]] = input
 			fmt.Printf(" Input: %v Stored in: %v\n", input, code[idx+1])
 		} else if opCode == 4 {
-			param1 := code[code[idx+1]]
-			if !param1PositionMode {
-				param1 = code[idx+1]
+			// Opcode `4` outputs the value of its only parameter.
+			param1 := code[idx+1]
+			if param1PositionMode {
+				param1 = code[code[idx+1]]
 			}
 			fmt.Printf("Value is %v\n", param1)
 			output = append(output,param1)
+		} else if opCode == 5 || opCode == 6 {
+			// Opcode `5` is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the 
+			// value from the second parameter. Otherwise, it does nothing.
+			// Opcode `6` is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the 
+			// value from the second parameter. Otherwise, it does nothing.
+			param1 := code[idx+1]
+			if param1PositionMode {
+				param1 = code[code[idx+1]]
+			}
+
+			param2 := code[idx+2]
+			if param2PositionMode {
+				param2 = code[code[idx+2]]
+			}
+
+			if (opCode == 5 && param1 != 0)||(opCode == 6 && param1 == 0) {
+				idx = param2
+			} else {
+				idx += opCodeLengths[opCode]
+			}
+		} else if opCode == 7 || opCode == 8 {
+			// Opcode `7` is less than: if the first parameter is less than the second parameter, it stores 1 in 
+			// the position given by the third parameter. Otherwise, it stores 0.
+			// Opcode `8` is equals: if the first parameter is equal to the second parameter, it stores 1 in the 
+			// position given by the third parameter. Otherwise, it stores 0.
+			param1 := code[idx+1]
+			if param1PositionMode {
+				param1 = code[code[idx+1]]
+			}
+
+			param2 := code[idx+2]
+			if param2PositionMode {
+				param2 = code[code[idx+2]]
+			}
+
+			if (opCode == 7 && param1 < param2) || (opCode == 8 && param1 == param2) {
+				code[code[idx+3]] = 1
+			} else {
+				code[code[idx+3]] = 0
+			}
 		}
 
-		idx += opCodeLengths[opCode]
+		if opCode != 5 && opCode != 6 {
+			idx += opCodeLengths[opCode]
+		}
 	}
 
 	panic("Abnormal termination of int code")
