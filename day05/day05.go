@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	//"sort"
 	"strconv"
 	"strings"
 )
@@ -28,11 +27,8 @@ func RunIntCode(code []int,input int) []int {
 		paddedIntCode := fmt.Sprintf("%05d",code[idx])
 		param1PositionMode := paddedIntCode[2:3] == "0"
 		param2PositionMode := paddedIntCode[1:2] == "0"
-		//param3PositionMode := paddedIntCode[0:1] == "0"
 
 		opCode, _ := strconv.Atoi(paddedIntCode[3:5])
-
-		fmt.Printf("%v > %v (%v): paramMode[1]: %v paramMode[2]: %v ", idx,paddedIntCode,opCode, param1PositionMode, param2PositionMode)
 
 		if opCode == 99 {
 			return output
@@ -56,19 +52,15 @@ func RunIntCode(code []int,input int) []int {
 			} else if opCode == 2 {
 				code[code[idx+3]] = param1 * param2	
 			}
-
-			fmt.Printf(" Param1: %v Param2: %v Result: %v Stored in: %v\n",param1,param2,code[code[idx+3]],code[idx+3])
 		} else if opCode == 3 {
 			// Opcode `3` takes a single integer as input and saves it to the address given by its only parameter.
 			code[code[idx+1]] = input
-			fmt.Printf(" Input: %v Stored in: %v\n", input, code[idx+1])
 		} else if opCode == 4 {
 			// Opcode `4` outputs the value of its only parameter.
 			param1 := code[idx+1]
 			if param1PositionMode {
 				param1 = code[code[idx+1]]
 			}
-			fmt.Printf("Value is %v\n", param1)
 			output = append(output,param1)
 		} else if opCode == 5 || opCode == 6 {
 			// Opcode `5` is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the 
@@ -137,14 +129,16 @@ func Part1(input string) string {
 
 	output := RunIntCode(intCode,1)
 
-	fmt.Println(output)
-
 	return "Answer: " + strconv.Itoa(output[len(output)-1])
 }
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	intCode := ParseIntCode(input)
+
+	output := RunIntCode(intCode,5)
+
+	return "Answer: " + strconv.Itoa(output[len(output)-1])
 }
 
 func main() {
