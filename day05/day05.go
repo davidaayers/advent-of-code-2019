@@ -79,6 +79,8 @@ func RunIntCode(code []int,input int) []int {
 			} else {
 				code[code[idx+3]] = 0
 			}
+		} else {
+			panic("Unexpected op code")
 		}
 
 		if opCode != 5 && opCode != 6 {
