@@ -16,9 +16,9 @@ var opCodeLengths = map[int]int{
 }
 
 // RunIntCode Our intCode interpreter
-func RunIntCode(code []int,input int) {
+func RunIntCode(code []int,input int) []int {
+	output := make([]int,0)	
 	idx := 0
-	//cnt := 0
 	for {
 
 		paddedIntCode := fmt.Sprintf("%05d",code[idx])
@@ -31,7 +31,7 @@ func RunIntCode(code []int,input int) {
 		fmt.Printf("%v > %v (%v): paramMode[1]: %v paramMode[2]: %v ", idx,paddedIntCode,opCode, param1PositionMode, param2PositionMode)
 
 		if opCode == 99 {
-			return
+			return output
 		} 
 		
 		if opCode == 1 || opCode == 2 {
@@ -62,10 +62,13 @@ func RunIntCode(code []int,input int) {
 				param1 = code[idx+1]
 			}
 			fmt.Printf("Value is %v\n", param1)
+			output = append(output,param1)
 		}
 
 		idx += opCodeLengths[opCode]
 	}
+
+	panic("Abnormal termination of int code")
 }
 
 // ParseIntCode Parses a comma delimted input string into an array of intCode
@@ -83,9 +86,11 @@ func ParseIntCode(input string) []int {
 func Part1(input string) string {
 	intCode := ParseIntCode(input)
 
-	RunIntCode(intCode,1)
+	output := RunIntCode(intCode,1)
 
-	return "Answer: " + strconv.Itoa(intCode[0])
+	fmt.Println(output)
+
+	return "Answer: " + strconv.Itoa(output[len(output)-1])
 }
 
 // Part2 Part2 of puzzle
