@@ -5,10 +5,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-
-	//"sort"
-	//"strconv"
-	//"strings"
 )
 
 type SpaceObject struct {
