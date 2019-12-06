@@ -15,12 +15,32 @@ var testCases = []struct {
 	},
 }
 
+var testCases2 = []struct {
+	orbitMap          []string
+	expectedTransfers int
+}{
+	{
+		[]string{"COM)B", "B)C", "C)D", "D)E", "E)F", "B)G", "G)H", "D)I", "E)J", "J)K", "K)L", "K)YOU", "I)SAN"},
+		4,
+	},
+}
+
 func TestCountOrbits(t *testing.T) {
 	for _, testCase := range testCases {
 		universe := MakeUniverse(testCase.orbitMap)
 		orbits := CountOrbits(universe)
 		if orbits != testCase.expectedOrbits {
 			t.Errorf("Error, expected %v got %v", testCase.expectedOrbits, orbits)
+		}
+	}
+}
+
+func TestCountTransfers(t *testing.T) {
+	for _, testCase := range testCases2 {
+		universe := MakeUniverse(testCase.orbitMap)
+		orbits := CountTransfers(universe)
+		if orbits != testCase.expectedTransfers {
+			t.Errorf("Error, expected %v got %v", testCase.expectedTransfers, orbits)
 		}
 	}
 }
@@ -38,7 +58,7 @@ func TestPart1(t *testing.T) {
 // go test -timeout 30s day03 -run '^(TestPart2)$'
 func TestPart2(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
-	expected := "Answer: "
+	expected := "Answer: 349"
 	answer := Part2(string(bytes))
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
