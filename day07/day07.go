@@ -10,14 +10,41 @@ import (
 	//"strings"
 )
 
+type Amplifier struct {
+	intCode            []int
+	phase              int
+	instructionPointer int
+}
+
 func CalculateThrust(intCode []int, phaseSequence []int, inputSignal int) int {
 	for _, p := range phaseSequence {
 		input := []int{p, inputSignal}
 		ic := intCode
-		output := RunIntCode(ic, input)
+		output, _, _ := RunIntCode(ic, input, 0, false)
 		inputSignal = output[0]
 	}
 	return inputSignal
+}
+
+func CalculateThrustWithFeedbackLoop(intCode []int, phaseSequence []int, inputSignal int) int {
+	amplifiers := make([]Amplifier, len(phaseSequence))
+	for i, p := range phaseSequence {
+		amplifiers[i] = Amplifier{
+			intCode:            intCode,
+			phase:              p,
+			instructionPointer: 0,
+		}
+	}
+
+	// initialize and run the first loop
+	for _, p := range phaseSequence {
+		input := []int{p, inputSignal}
+		ic := intCode
+		output, _, _ := RunIntCode(ic, input, 0, true)
+		inputSignal = output[0]
+	}
+
+	return 0
 }
 
 var opCodeLengths = map[int]int{
@@ -25,17 +52,16 @@ var opCodeLengths = map[int]int{
 }
 
 // RunIntCode Our intCode interpreter
-func RunIntCode(code []int, input []int) []int {
-	output := make([]int, 0)
-	idx := 0
+func RunIntCode(code []int, input []int, instructionPointer int, shouldPauseOnOutput bool) (output []int, lastPointer int, terminated bool) {
+	output = make([]int, 0)
 	inputIdx := 0
 	for {
 
-		paddedIntCode := fmt.Sprintf("%05d", code[idx])
+		paddedIntCode := fmt.Sprintf("%05d", code[instructionPointer])
 		opCode, _ := strconv.Atoi(paddedIntCode[3:5])
 
 		if opCode == 99 {
-			return output
+			return output, instructionPointer, true
 		}
 
 		paramModeMap := map[int]bool{
@@ -45,9 +71,9 @@ func RunIntCode(code []int, input []int) []int {
 		}
 
 		getParam := func(pos int) int {
-			param := code[idx+pos]
+			param := code[instructionPointer+pos]
 			if paramModeMap[pos] {
-				param = code[code[idx+pos]]
+				param = code[code[instructionPointer+pos]]
 			}
 			return param
 		}
@@ -56,26 +82,31 @@ func RunIntCode(code []int, input []int) []int {
 			// Opcode `1` adds together numbers read from two positions and stores the result in a third position.
 			// Opcode `2` works exactly like opcode `1`, except it multiplies the two inputs instead of adding them.
 			if opCode == 1 {
-				code[code[idx+3]] = getParam(1) + getParam(2)
+				code[code[instructionPointer+3]] = getParam(1) + getParam(2)
 			} else if opCode == 2 {
-				code[code[idx+3]] = getParam(1) * getParam(2)
+				code[code[instructionPointer+3]] = getParam(1) * getParam(2)
 			}
 		} else if opCode == 3 {
 			// Opcode `3` takes a single integer as input and saves it to the address given by its only parameter.
-			code[code[idx+1]] = input[inputIdx]
+			code[code[instructionPointer+1]] = input[inputIdx]
 			inputIdx++
 		} else if opCode == 4 {
 			// Opcode `4` outputs the value of its only parameter.
 			output = append(output, getParam(1))
+
+			if shouldPauseOnOutput {
+				return output, instructionPointer, false
+			}
+
 		} else if opCode == 5 || opCode == 6 {
 			// Opcode `5` is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the
 			// value from the second parameter. Otherwise, it does nothing.
 			// Opcode `6` is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the
 			// value from the second parameter. Otherwise, it does nothing.
 			if (opCode == 5 && getParam(1) != 0) || (opCode == 6 && getParam(1) == 0) {
-				idx = getParam(2)
+				instructionPointer = getParam(2)
 			} else {
-				idx += opCodeLengths[opCode]
+				instructionPointer += opCodeLengths[opCode]
 			}
 		} else if opCode == 7 || opCode == 8 {
 			// Opcode `7` is less than: if the first parameter is less than the second parameter, it stores 1 in
@@ -83,16 +114,16 @@ func RunIntCode(code []int, input []int) []int {
 			// Opcode `8` is equals: if the first parameter is equal to the second parameter, it stores 1 in the
 			// position given by the third parameter. Otherwise, it stores 0.
 			if (opCode == 7 && getParam(1) < getParam(2)) || (opCode == 8 && getParam(1) == getParam(2)) {
-				code[code[idx+3]] = 1
+				code[code[instructionPointer+3]] = 1
 			} else {
-				code[code[idx+3]] = 0
+				code[code[instructionPointer+3]] = 0
 			}
 		} else {
 			panic("Unexpected op code")
 		}
 
 		if opCode != 5 && opCode != 6 {
-			idx += opCodeLengths[opCode]
+			instructionPointer += opCodeLengths[opCode]
 		}
 	}
 }
