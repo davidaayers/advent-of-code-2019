@@ -29,22 +29,41 @@ func CalculateThrust(intCode []int, phaseSequence []int, inputSignal int) int {
 func CalculateThrustWithFeedbackLoop(intCode []int, phaseSequence []int, inputSignal int) int {
 	amplifiers := make([]Amplifier, len(phaseSequence))
 	for i, p := range phaseSequence {
+		sliceCopy := make([]int, len(intCode))
+		copy(sliceCopy, intCode)
 		amplifiers[i] = Amplifier{
-			intCode:            intCode,
+			intCode:            sliceCopy,
 			phase:              p,
 			instructionPointer: 0,
 		}
 	}
 
 	// initialize and run the first loop
-	for _, p := range phaseSequence {
+	for i, p := range phaseSequence {
 		input := []int{p, inputSignal}
-		ic := intCode
-		output, _, _ := RunIntCode(ic, input, 0, true)
+		output, lastPointer, _ := RunIntCode(amplifiers[i].intCode, input, 0, true)
+		amplifiers[i].instructionPointer = lastPointer
 		inputSignal = output[0]
 	}
 
-	return 0
+	// now, let the feedback loop run
+	runningAmplifier := 0
+	for {
+		// last inputSignal is the output from the last amplifier, feed that into the next
+		input := []int{inputSignal}
+		output, lastPointer, terminated := RunIntCode(amplifiers[runningAmplifier].intCode, input, amplifiers[runningAmplifier].instructionPointer, true)
+		amplifiers[runningAmplifier].instructionPointer = lastPointer
+		if terminated {
+			break
+		}
+		inputSignal = output[0]
+		runningAmplifier++
+		if runningAmplifier > 4 {
+			runningAmplifier = 0
+		}
+	}
+
+	return inputSignal
 }
 
 var opCodeLengths = map[int]int{
@@ -86,18 +105,19 @@ func RunIntCode(code []int, input []int, instructionPointer int, shouldPauseOnOu
 			} else if opCode == 2 {
 				code[code[instructionPointer+3]] = getParam(1) * getParam(2)
 			}
+			instructionPointer += opCodeLengths[opCode]
 		} else if opCode == 3 {
 			// Opcode `3` takes a single integer as input and saves it to the address given by its only parameter.
 			code[code[instructionPointer+1]] = input[inputIdx]
 			inputIdx++
+			instructionPointer += opCodeLengths[opCode]
 		} else if opCode == 4 {
 			// Opcode `4` outputs the value of its only parameter.
 			output = append(output, getParam(1))
-
+			instructionPointer += opCodeLengths[opCode]
 			if shouldPauseOnOutput {
 				return output, instructionPointer, false
 			}
-
 		} else if opCode == 5 || opCode == 6 {
 			// Opcode `5` is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the
 			// value from the second parameter. Otherwise, it does nothing.
@@ -118,12 +138,9 @@ func RunIntCode(code []int, input []int, instructionPointer int, shouldPauseOnOu
 			} else {
 				code[code[instructionPointer+3]] = 0
 			}
+			instructionPointer += opCodeLengths[opCode]
 		} else {
 			panic("Unexpected op code")
-		}
-
-		if opCode != 5 && opCode != 6 {
-			instructionPointer += opCodeLengths[opCode]
 		}
 	}
 }
@@ -186,7 +203,19 @@ func Part1(input string) string {
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	intCode := ParseIntCode(input)
+
+	permutations := permutations([]int{5, 6, 7, 8, 9})
+	highestThrust := 0
+
+	for _, permutation := range permutations {
+		thrust := CalculateThrustWithFeedbackLoop(intCode, permutation, 0)
+		if thrust > highestThrust {
+			highestThrust = thrust
+		}
+	}
+
+	return "Answer: " + strconv.Itoa(highestThrust)
 }
 
 func main() {
