@@ -29,7 +29,7 @@ var testCases = []struct {
 
 func TestRunIntCode(t *testing.T) {
 	for _, testCase := range testCases {
-		thrust := CalculateThrust(testCase.startingCode, testCase.phaseSequence)
+		thrust := CalculateThrust(testCase.startingCode, testCase.phaseSequence, 0)
 		if thrust != testCase.expectedThrust {
 			t.Errorf("Error, expected %v got %v", testCase.expectedThrust, thrust)
 		}
@@ -38,7 +38,7 @@ func TestRunIntCode(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
-	expected := "Answer: "
+	expected := "Answer: 368584"
 	answer := Part1(string(bytes))
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)

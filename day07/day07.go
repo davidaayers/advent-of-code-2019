@@ -5,18 +5,19 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-
 	//"sort"
 	//"strconv"
 	//"strings"
 )
 
-func CalculateThrust(intCode []int, phaseSequence []int) int {
-
-
-
-
-	return 0
+func CalculateThrust(intCode []int, phaseSequence []int, inputSignal int) int {
+	for _, p := range phaseSequence {
+		input := []int{p, inputSignal}
+		ic := intCode
+		output := RunIntCode(ic, input)
+		inputSignal = output[0]
+	}
+	return inputSignal
 }
 
 var opCodeLengths = map[int]int{
@@ -107,9 +108,49 @@ func ParseIntCode(input string) []int {
 	return intCode
 }
 
+func permutations(arr []int) [][]int {
+	var helper func([]int, int)
+	var res [][]int
+
+	helper = func(arr []int, n int) {
+		if n == 1 {
+			tmp := make([]int, len(arr))
+			copy(tmp, arr)
+			res = append(res, tmp)
+		} else {
+			for i := 0; i < n; i++ {
+				helper(arr, n-1)
+				if n%2 == 1 {
+					tmp := arr[i]
+					arr[i] = arr[n-1]
+					arr[n-1] = tmp
+				} else {
+					tmp := arr[0]
+					arr[0] = arr[n-1]
+					arr[n-1] = tmp
+				}
+			}
+		}
+	}
+	helper(arr, len(arr))
+	return res
+}
+
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
-	return "Answer: "
+	intCode := ParseIntCode(input)
+
+	permutations := permutations([]int{0, 1, 2, 3, 4})
+	highestThrust := 0
+
+	for _, permutation := range permutations {
+		thrust := CalculateThrust(intCode, permutation, 0)
+		if thrust > highestThrust {
+			highestThrust = thrust
+		}
+	}
+
+	return "Answer: " + strconv.Itoa(highestThrust)
 }
 
 // Part2 Part2 of puzzle
