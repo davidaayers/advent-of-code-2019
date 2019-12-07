@@ -27,7 +27,7 @@ var testCases = []struct {
 	},
 }
 
-func TestRunIntCode(t *testing.T) {
+func TestCalculateThrust(t *testing.T) {
 	for _, testCase := range testCases {
 		thrust := CalculateThrust(testCase.startingCode, testCase.phaseSequence, 0)
 		if thrust != testCase.expectedThrust {
