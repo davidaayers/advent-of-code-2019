@@ -47,34 +47,33 @@ func RunIntCode(initialCode []int, input []int, instructionPointer int, shouldPa
 			case relativeMode:
 				return code[relativeBase+code[instructionPointer+pos]]
 			}
-			panic("Invalid param mode")
+			panic("Invalid param mode " + paramMode[pos])
+		}
+
+		putParam := func(pos int, value int) {
+			switch paramMode[pos] {
+			case positionMode:
+				code[code[instructionPointer+pos]] = value
+				return
+			case relativeMode:
+				code[relativeBase+code[instructionPointer+pos]] = value
+				return
+			}
+			panic("Invalid param mode " + paramMode[pos])
 		}
 
 		if opCode == 1 || opCode == 2 {
 			// Opcode `1` adds together numbers read from two positions and stores the result in a third position.
 			// Opcode `2` works exactly like opcode `1`, except it multiplies the two inputs instead of adding them.
-			var answer int
 			if opCode == 1 {
-				answer = getParam(1) + getParam(2)
+				putParam(3, getParam(1)+getParam(2))
 			} else if opCode == 2 {
-				answer = getParam(1) * getParam(2)
+				putParam(3, getParam(1)*getParam(2))
 			}
-
-			if paramMode[3] == positionMode {
-				code[code[instructionPointer+3]] = answer
-			} else {
-				code[relativeBase+code[instructionPointer+3]] = answer
-			}
-
 			instructionPointer += opCodeLengths[opCode]
 		} else if opCode == 3 {
 			// Opcode `3` takes a single integer as input and saves it to the address given by its only parameter.
-			if paramMode[1] == positionMode {
-				code[code[instructionPointer+1]] = input[inputIdx]
-			} else {
-				code[relativeBase+code[instructionPointer+1]] = input[inputIdx]
-			}
-
+			putParam(1, input[inputIdx])
 			inputIdx++
 			instructionPointer += opCodeLengths[opCode]
 		} else if opCode == 4 {
@@ -100,15 +99,10 @@ func RunIntCode(initialCode []int, input []int, instructionPointer int, shouldPa
 			// the position given by the third parameter. Otherwise, it stores 0.
 			// Opcode `8` is equals: if the first parameter is equal to the second parameter, it stores 1 in the
 			// position given by the third parameter. Otherwise, it stores 0.
-			answer := 0
 			if (opCode == 7 && getParam(1) < getParam(2)) || (opCode == 8 && getParam(1) == getParam(2)) {
-				answer = 1
-			}
-
-			if paramMode[3] == positionMode {
-				code[code[instructionPointer+3]] = answer
+				putParam(3, 1)
 			} else {
-				code[relativeBase+code[instructionPointer+3]] = answer
+				putParam(3, 0)
 			}
 
 			instructionPointer += opCodeLengths[opCode]
