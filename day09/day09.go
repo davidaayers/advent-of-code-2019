@@ -148,7 +148,12 @@ func Part1(input string) string {
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	intCode := ParseIntCode(input)
+	output, _, _ := RunIntCode(intCode, []int{2}, 0, false)
+	if len(output) != 1 {
+		fmt.Printf("Output: %v\n", output)
+	}
+	return "Answer: " + strconv.Itoa(output[len(output)-1])
 }
 
 func main() {
