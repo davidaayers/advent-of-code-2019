@@ -68,7 +68,7 @@ func (hull Hull) printHull() {
 }
 
 // Part1 Part 1 of puzzle
-func Part1(input string) string {
+func paintHull(input string, startingColor string) string {
 	intCode := ParseIntCode(input)
 
 	robot := Robot{
@@ -90,9 +90,13 @@ func Part1(input string) string {
 		}
 	}
 
+	// start on a single white panel
+	hull.hullMap[100][100] = startingColor
+
 	copy(robot.memory, intCode)
 
 	instructionPointer := 0
+	relativeBase := 0
 	numPanelsPainted := 0
 	for {
 		// look at the panel under the robot, and feed that color as the input
@@ -106,8 +110,9 @@ func Part1(input string) string {
 		// 1 - the direction to turn (0 = left, 1 = right)
 		// will pause on each output, so we need to run it twice, once to get the color, then again
 		// to get the turn direction
-		output, lastPointer, terminated := RunIntCode(robot.memory, []int{panelColor}, instructionPointer, true)
+		output, lastPointer, lastRelativeBase, terminated := RunIntCode(robot.memory, []int{panelColor}, instructionPointer, relativeBase, true)
 		instructionPointer = lastPointer
+		relativeBase = lastRelativeBase
 
 		if terminated {
 			break
@@ -116,8 +121,9 @@ func Part1(input string) string {
 		color := output[0]
 
 		// now, run again to get the turn direction
-		output, lastPointer, terminated = RunIntCode(robot.memory, []int{panelColor}, instructionPointer, true)
+		output, lastPointer, lastRelativeBase, terminated = RunIntCode(robot.memory, []int{panelColor}, instructionPointer, relativeBase, true)
 		instructionPointer = lastPointer
+		relativeBase = lastRelativeBase
 
 		turnDirection := output[0]
 
@@ -141,17 +147,23 @@ func Part1(input string) string {
 
 	hull.printHull()
 
-	return "Answer: " + strconv.Itoa(numPanelsPainted)
+	return strconv.Itoa(numPanelsPainted)
+}
+
+func Part1(input string) string {
+	answer := paintHull(input, "_")
+	return "Answer: " + answer
 }
 
 // Part2 Part2 of puzzle
-func Part2(input string) string {
-	return "Answer: "
+func Part2(input string) {
+	paintHull(input, "#")
 }
 
 func main() {
 	bytes, _ := ioutil.ReadFile("input.txt")
 
 	fmt.Println("Part 1: " + Part1(string(bytes)))
-	fmt.Println("Part 2: " + Part2(string(bytes)))
+	fmt.Println("Part 2: ")
+	Part2(string(bytes))
 }

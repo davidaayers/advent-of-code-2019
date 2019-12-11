@@ -13,21 +13,20 @@ var opCodeLengths = map[int]int{
 const positionMode, immediateMode, relativeMode = "0", "1", "2"
 
 // RunIntCode Our intCode interpreter
-func RunIntCode(code []int, input []int, instructionPointer int, shouldPauseOnOutput bool) (output []int, lastPointer int, terminated bool) {
+func RunIntCode(code []int, input []int, instructionPointer int, relativeBase int, shouldPauseOnOutput bool) (output []int, lastPointer int, lastRelativeBase int, terminated bool) {
 	//// copy the code into a large memory buffer
 	//code := make([]int, 3000)
 	//copy(code, initialCode)
 
 	output = make([]int, 0)
 	inputIdx := 0
-	relativeBase := 0
 	for {
 
 		paddedIntCode := fmt.Sprintf("%05d", code[instructionPointer])
 		opCode, _ := strconv.Atoi(paddedIntCode[3:5])
 
 		if opCode == 99 {
-			return output, instructionPointer, true
+			return output, instructionPointer, relativeBase, true
 		}
 
 		paramMode := map[int]string{
@@ -80,7 +79,7 @@ func RunIntCode(code []int, input []int, instructionPointer int, shouldPauseOnOu
 			instructionPointer += opCodeLengths[opCode]
 
 			if shouldPauseOnOutput {
-				return output, instructionPointer, false
+				return output, instructionPointer, relativeBase, false
 			}
 		} else if opCode == 5 || opCode == 6 {
 			// Opcode `5` is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the
