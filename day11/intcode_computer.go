@@ -14,10 +14,6 @@ const positionMode, immediateMode, relativeMode = "0", "1", "2"
 
 // RunIntCode Our intCode interpreter
 func RunIntCode(code []int, input []int, instructionPointer int, relativeBase int, shouldPauseOnOutput bool) (output []int, lastPointer int, lastRelativeBase int, terminated bool) {
-	//// copy the code into a large memory buffer
-	//code := make([]int, 3000)
-	//copy(code, initialCode)
-
 	output = make([]int, 0)
 	inputIdx := 0
 	for {
