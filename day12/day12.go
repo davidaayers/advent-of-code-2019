@@ -6,9 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	//"sort"
-	//"strconv"
-	//"strings"
 )
 
 type Moon struct {
@@ -39,28 +36,14 @@ func ParseCoordinates(input string) []Moon {
 
 func MoveTime(steps int, moons []Moon) {
 	for t := 0; t < steps; t++ {
-		MoveTimeOneStep(moons, t)
+		MoveTimeOneStep(moons)
 	}
 }
 
-func MoveTimeOneStep(moons []Moon, step int) {
+func MoveTimeOneStep(moons []Moon) {
 	// apply gravity first
 	for m1 := 0; m1 < len(moons); m1++ {
 		for m2 := m1 + 1; m2 < len(moons); m2++ {
-			//fmt.Printf("Comparing %v to %v\n", m1, m2)
-
-			/*
-				 For example, if m1 has an x position of 3, and m2 has a x position of 5,
-				 then m1's x velocity changes by +1 (because 5 > 3) and m2's x velocity
-				 changes by -1 (because 3 < 5). However, if the positions on a given axis are the same,
-				 the velocity on that axis does not change for that pair of moons.
-
-				m1 start x = -1
-				m2 start x = 2
-
-				-1 > 2
-
-			*/
 			if moons[m1].x > moons[m2].x {
 				moons[m1].vx--
 				moons[m2].vx++
@@ -93,8 +76,6 @@ func MoveTimeOneStep(moons []Moon, step int) {
 		moons[m].y += moons[m].vy
 		moons[m].z += moons[m].vz
 	}
-
-	//fmt.Printf("Moons (%v): %v\n", step, moons)
 }
 
 func CalculateTotalEnergy(moons []Moon) int {
@@ -125,7 +106,74 @@ func Part1(input string) string {
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	moons := ParseCoordinates(input)
+
+	xs := make(map[string]bool)
+	ys := make(map[string]bool)
+	zs := make(map[string]bool)
+
+	rx, ry, rz := 0, 0, 0
+
+	i := 0
+	for {
+		MoveTime(1, moons)
+
+		if rx == 0 {
+			x := fmt.Sprintf("%v %v %v %v %v %v %v %v", moons[0].x, moons[1].x, moons[2].x, moons[3].x,
+				moons[0].vx, moons[1].vx, moons[2].vx, moons[3].vx)
+			if xs[x] {
+				rx = i
+			}
+			xs[x] = true
+		}
+
+		if ry == 0 {
+			y := fmt.Sprintf("%v %v %v %v %v %v %v %v", moons[0].y, moons[1].y, moons[2].y, moons[3].y,
+				moons[0].vy, moons[1].vy, moons[2].vy, moons[3].vy)
+			if ys[y] {
+				ry = i
+			}
+			ys[y] = true
+		}
+
+		if rz == 0 {
+			z := fmt.Sprintf("%v %v %v %v %v %v %v %v", moons[0].z, moons[1].z, moons[2].z, moons[3].z,
+				moons[0].vz, moons[1].vz, moons[2].vz, moons[3].vz)
+			if zs[z] {
+				rz = i
+			}
+			zs[z] = true
+		}
+
+		if rx != 0 && ry != 0 && rz != 0 {
+			break
+		}
+		i++
+	}
+
+	return "Answer: " + strconv.Itoa(LCM(rx, ry, rz))
+}
+
+// LCM code from: https://siongui.github.io/2017/06/03/go-find-lcm-by-gcd/
+// greatest common divisor (GCD) via Euclidean algorithm
+func GCD(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// find Least Common Multiple (LCM) via GCD
+func LCM(a, b int, integers ...int) int {
+	result := a * b / GCD(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+
+	return result
 }
 
 func main() {
