@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	//"sort"
-	//"strconv"
-	//"strings"
 )
 
 // Part1 Part 1 of puzzle
