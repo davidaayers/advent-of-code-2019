@@ -18,14 +18,51 @@ type Ingredient struct {
 	count  int
 }
 
-func DetermineRequiredOre(reactions []string) int {
+func DetermineRequiredOre(reactions []string, numFuelDesired int) int {
 	recipes := make(map[string]ReactionRecipe, len(reactions))
 	for _, reaction := range reactions {
 		recipe := parseReaction(reaction)
 		recipes[recipe.result] = recipe
 	}
 
-	return Produce("FUEL", 1, recipes, make(map[string]int))
+	return Produce("FUEL", numFuelDesired, recipes, make(map[string]int))
+}
+
+func DetermineMaxFuelForOre(reactions []string, ore int) int {
+	start := 0
+	end := ore
+	guesses := 0
+	lastGuess := 0
+	fuelGuess := 0
+	for {
+		guesses++
+
+		fuelGuess = (end-start)/2 + start
+
+		requiredOre := DetermineRequiredOre(reactions, fuelGuess)
+		if requiredOre == ore {
+			break
+		}
+
+		if requiredOre > ore {
+			end = fuelGuess
+		} else {
+			start = fuelGuess
+		}
+
+		//fmt.Printf("Guess # %v: RequiredOre was %v, fuel guess was %v, start was %v end was %v\n", guesses, requiredOre, fuelGuess, start, end)
+
+		// circuit breaker
+		if guesses > 1000 || fuelGuess == lastGuess {
+			break
+		}
+
+		lastGuess = fuelGuess
+	}
+
+	//fmt.Printf("Took %v guesses\n", guesses)
+
+	return fuelGuess
 }
 
 func Produce(desiredElement string, numDesired int, recipes map[string]ReactionRecipe, excess map[string]int) int {
@@ -94,13 +131,15 @@ func parseElement(element string) (elementName string, count int) {
 // Part1 Part 1 of puzzle
 func Part1(input string) string {
 	lines := strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n")
-	ore := DetermineRequiredOre(lines)
+	ore := DetermineRequiredOre(lines, 1)
 	return "Answer: " + strconv.Itoa(ore)
 }
 
 // Part2 Part2 of puzzle
 func Part2(input string) string {
-	return "Answer: "
+	lines := strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n")
+	fuel := DetermineMaxFuelForOre(lines, 1000000000000)
+	return "Answer: " + strconv.Itoa(fuel)
 }
 
 func main() {

@@ -6,8 +6,9 @@ import (
 )
 
 var testCases = []struct {
-	reactions   []string
-	expectedOre int
+	reactions               []string
+	expectedOre             int
+	trillionOreFuelProduced int
 }{
 	{
 		[]string{
@@ -19,6 +20,7 @@ var testCases = []struct {
 			"7 A, 1 E => 1 FUEL",
 		},
 		31,
+		0,
 	},
 	{
 		[]string{
@@ -31,6 +33,7 @@ var testCases = []struct {
 			"2 AB, 3 BC, 4 CA => 1 FUEL",
 		},
 		165,
+		0,
 	},
 	{
 		[]string{
@@ -45,6 +48,7 @@ var testCases = []struct {
 			"3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT",
 		},
 		13312,
+		82892753,
 	},
 	{
 		[]string{
@@ -62,6 +66,7 @@ var testCases = []struct {
 			"176 ORE => 6 VJHF",
 		},
 		180697,
+		5586022,
 	},
 	{
 		[]string{
@@ -84,14 +89,30 @@ var testCases = []struct {
 			"5 BHXH, 4 VRPVC => 5 LTCX",
 		},
 		2210736,
+		460664,
 	},
 }
 
 func TestDetermineRequiredOre(t *testing.T) {
 	for _, testCase := range testCases {
-		ore := DetermineRequiredOre(testCase.reactions)
+		ore := DetermineRequiredOre(testCase.reactions, 1)
 		if ore != testCase.expectedOre {
 			t.Errorf("Error, expected %v got %v", testCase.expectedOre, ore)
+		}
+	}
+}
+
+func TestDetermineMaxFuelForOre(t *testing.T) {
+	for _, testCase := range testCases {
+		// skip test cases where answers weren't provided
+		if testCase.trillionOreFuelProduced == 0 {
+			continue
+		}
+		//1091772158869
+		//1000000000000
+		fuel := DetermineMaxFuelForOre(testCase.reactions, 1000000000000)
+		if fuel != testCase.trillionOreFuelProduced {
+			t.Errorf("Error, expected %v got %v", testCase.trillionOreFuelProduced, fuel)
 		}
 	}
 }
@@ -107,7 +128,7 @@ func TestPart1(t *testing.T) {
 
 func TestPart2(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
-	expected := "Answer: WRONG"
+	expected := "Answer: 2144702"
 	answer := Part2(string(bytes))
 	if answer != expected {
 		t.Errorf("Error, expected %s got %s", expected, answer)
