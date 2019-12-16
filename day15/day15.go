@@ -43,8 +43,9 @@ type ShipMap struct {
 }
 
 type Point struct {
-	x, y int
-	tile string
+	x, y       int
+	tile       string
+	oxygenated bool
 }
 
 func (p Point) ManhattanDistanceTo(other Point) int {
@@ -108,6 +109,28 @@ func (shipMap ShipMap) RenderMap(repairDroid RepairDroid) {
 	}
 }
 
+func (shipMap ShipMap) Unoxygenated() (count int) {
+	for y := 0; y < shipMap.height; y++ {
+		for x := 0; x < shipMap.width; x++ {
+			if shipMap.grid[y][x].tile == floor && !shipMap.grid[y][x].oxygenated {
+				count++
+			}
+		}
+	}
+	return
+}
+
+func (shipMap ShipMap) Neighbors(from Point) []Point {
+	neighbors := make([]Point, 0)
+	for _, dir := range dirs {
+		pointInDir := shipMap.grid[from.y+dir.dy][from.x+dir.dx]
+		if pointInDir.tile == floor {
+			neighbors = append(neighbors, pointInDir)
+		}
+	}
+	return neighbors
+}
+
 func (shipMap ShipMap) Path(from, to Point) (path []Point, ok bool) {
 	path = make([]Point, 0)
 
@@ -140,18 +163,16 @@ func (shipMap ShipMap) Path(from, to Point) (path []Point, ok bool) {
 		}
 
 		children := make([]PathNode, 0)
-		for _, dir := range dirs {
-			pointInDir := shipMap.grid[currentNode.point.y+dir.dy][currentNode.point.x+dir.dx]
-			if pointInDir.tile == floor {
-				children = append(children, PathNode{
-					point:  pointInDir,
-					parent: &currentNode,
-				})
-			}
+
+		for _, pointInDir := range shipMap.Neighbors(currentNode.point) {
+			children = append(children, PathNode{
+				point:  pointInDir,
+				parent: &currentNode,
+			})
 		}
 
 		for _, child := range children {
-			if contains(closedList, child) {
+			if containsPathNode(closedList, child) {
 				continue
 			}
 			child.g = currentNode.g + 1
@@ -180,9 +201,18 @@ func find(nodes []PathNode, n PathNode) (found PathNode, ok bool) {
 	return PathNode{}, false
 }
 
-func contains(s []PathNode, e PathNode) bool {
+func containsPathNode(s []PathNode, e PathNode) bool {
 	for _, a := range s {
 		if a.point == e.point {
+			return true
+		}
+	}
+	return false
+}
+
+func containsPoint(s []Point, e Point) bool {
+	for _, a := range s {
+		if a.x == e.x && a.y == e.y {
 			return true
 		}
 	}
@@ -242,6 +272,7 @@ func Part1(input string) (string, ShipMap) {
 			if shipMap.osX == 0 && shipMap.osY == 0 {
 				shipMap.osX = droid.x
 				shipMap.osY = droid.y
+				shipMap.grid[shipMap.osY][shipMap.osX].oxygenated = true
 				//fmt.Printf("Found oxygen system at: %v,%v\n", shipMap.osX, shipMap.osY)
 			}
 		}
@@ -268,8 +299,26 @@ func Part1(input string) (string, ShipMap) {
 }
 
 // Part2 Part2 of puzzle
-func Part2(input ShipMap) string {
-	return "Answer: "
+func Part2(shipMap ShipMap) string {
+	minutes := 0
+	oxygenatedPoints := []Point{shipMap.grid[shipMap.osY][shipMap.osX]}
+
+	for shipMap.Unoxygenated() > 0 {
+		for _, point := range oxygenatedPoints {
+			neighbors := shipMap.Neighbors(point)
+			for idx := 0; idx < len(neighbors); idx++ {
+				neighbor := neighbors[idx]
+				shipMap.grid[neighbor.y][neighbor.x].oxygenated = true
+				if !containsPoint(oxygenatedPoints, neighbor) {
+					oxygenatedPoints = append(oxygenatedPoints, neighbor)
+				}
+
+			}
+		}
+		minutes++
+	}
+
+	return "Answer: " + strconv.Itoa(minutes)
 }
 
 func main() {
