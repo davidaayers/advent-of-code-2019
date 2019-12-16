@@ -34,7 +34,7 @@ var testCases = []struct {
 
 func TestCleanupSignal(t *testing.T) {
 	for _, testCase := range testCases {
-		output := CleanupSignal(testCase.signal, testCase.numPhases)
+		output := CleanupSignal(testCase.signal, testCase.numPhases, 0)
 		if output[0:8] != testCase.output {
 			t.Errorf("Error, expected %v got %v", testCase.output, output)
 		}
