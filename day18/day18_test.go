@@ -5,6 +5,28 @@ import (
 	"testing"
 )
 
+var testCases = []struct {
+	board         string
+	expectedSteps int
+}{
+	{
+		`#########
+#b.A.@.a#
+#########`,
+		8,
+	},
+}
+
+func TestFindLeastSteps(t *testing.T) {
+	for _, testCase := range testCases {
+		neptune := buildNeptune(testCase.board)
+		steps := FindLeastSteps(neptune)
+		if steps != testCase.expectedSteps {
+			t.Errorf("Error, expected %v got %v", testCase.expectedSteps, steps)
+		}
+	}
+}
+
 func TestPart1(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("input.txt")
 	expected := "Answer: WRONG"
