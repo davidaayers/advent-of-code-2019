@@ -67,18 +67,44 @@ func (board Board) RenderBoard() {
 	}
 }
 
-func (board Board) Neighbors(from Point) []Point {
+func (board Board) WalkableNeighbors(from Point) []Point {
+	return board.NeighborsForTile(from, floor)
+}
+
+func (board Board) NeighborsForTile(from Point, tile string) []Point {
+	neighbors := make([]Point, 0)
+	allNeighbors := board.AllNeighbors(from)
+	for _, neighbor := range allNeighbors {
+		if neighbor.tile == tile {
+			neighbors = append(neighbors, neighbor)
+		}
+	}
+	return neighbors
+}
+
+func (board Board) AllNeighbors(from Point) []Point {
 	neighbors := make([]Point, 0)
 	for _, dir := range dirs {
-		pointInDir := board.grid[from.y+dir.dy][from.x+dir.dx]
-		if pointInDir.tile == floor {
+		checkX := from.x + dir.dx
+		checkY := from.y + dir.dy
+		if checkX >= 0 && checkX < board.width && checkY >= 0 && checkY < board.height {
+			pointInDir := board.grid[checkY][checkX]
 			neighbors = append(neighbors, pointInDir)
 		}
 	}
 	return neighbors
 }
 
-func (board Board) Path(from, to Point) (path []Point, ok bool) {
+func (board Board) PointInDir(from Point, dir Dir) (other Point, ok bool) {
+	checkX := from.x + dir.dx
+	checkY := from.y + dir.dy
+	if checkX > board.width-1 || checkX <= 0 || checkY > board.height-1 || checkY <= 0 {
+		return
+	}
+	return board.grid[checkY][checkX], true
+}
+
+func (board Board) Path(from, to Point, pathExpander func(board Board, parent Point) []Point) (path []Point, ok bool) {
 	path = make([]Point, 0)
 
 	startNode := PathNode{
@@ -111,7 +137,7 @@ func (board Board) Path(from, to Point) (path []Point, ok bool) {
 
 		children := make([]PathNode, 0)
 
-		for _, pointInDir := range board.Neighbors(currentNode.point) {
+		for _, pointInDir := range pathExpander(board, currentNode.point) {
 			children = append(children, PathNode{
 				point:  pointInDir,
 				parent: &currentNode,
@@ -123,7 +149,8 @@ func (board Board) Path(from, to Point) (path []Point, ok bool) {
 				continue
 			}
 			child.g = currentNode.g + 1
-			child.h = child.point.ManhattanDistanceTo(to)
+			child.h = 1
+			//child.h = child.point.ManhattanDistanceTo(to)
 			child.f = child.g + child.h
 
 			found, ok := find(openList, child)
