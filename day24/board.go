@@ -42,6 +42,10 @@ func (board *Board) AddTile(x, y int, tile string) {
 }
 
 func NewBoard(width, height int) (board Board) {
+	return NewBoardWithStartingTile(width, height, unexplored)
+}
+
+func NewBoardWithStartingTile(width, height int, tile string) (board Board) {
 	board = Board{
 		width:  width,
 		height: height,
@@ -51,7 +55,7 @@ func NewBoard(width, height int) (board Board) {
 	for y := 0; y < board.height; y++ {
 		board.grid[y] = make([]Point, board.width)
 		for x := 0; x < board.width; x++ {
-			board.AddTile(x, y, unexplored)
+			board.AddTile(x, y, tile)
 		}
 	}
 
