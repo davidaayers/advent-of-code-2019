@@ -27,15 +27,14 @@ func CalculateBiodiversityRating(board Board) int {
 			for x := 0; x < board.width; x++ {
 				tile := board.grid[y][x].tile
 				newTile := tile
+				adjacentBugs := board.NeighborsForTile(Point{x: x, y: y}, "#")
 				if tile == "." {
 					// An empty space becomes infested with a bug if exactly one or two bugs are adjacent to it
-					adjacentBugs := board.NeighborsForTile(Point{x: x, y: y}, "#")
 					if len(adjacentBugs) == 1 || len(adjacentBugs) == 2 {
 						newTile = "#"
 					}
 				} else if tile == "#" {
 					// A bug dies (becoming an empty space) unless there is exactly one bug adjacent to it
-					adjacentBugs := board.NeighborsForTile(Point{x: x, y: y}, "#")
 					if len(adjacentBugs) != 1 {
 						newTile = "."
 					}
