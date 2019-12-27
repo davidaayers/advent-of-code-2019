@@ -137,7 +137,6 @@ func CountBugsRecursive(startingBoard Board, numMinutes int) int {
 					}
 
 					// special handling for inner edges, need to look a the board one level lower for adjacent
-					//containedBoard := boards[level+1]
 					if x == 2 && y == 1 {
 						// whole top row of contained
 						for x2 := 0; x2 < containedBoard.width; x2++ {
