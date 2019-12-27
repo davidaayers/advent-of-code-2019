@@ -67,6 +67,17 @@ func (board Board) RenderBoard() {
 	}
 }
 
+func (board Board) Matches(other Board) bool {
+	for y := 0; y < board.height; y++ {
+		for x := 0; x < board.width; x++ {
+			if board.grid[y][x].tile != other.grid[y][x].tile {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (board Board) WalkableNeighbors(from Point) []Point {
 	return board.NeighborsForTile(from, floor)
 }
