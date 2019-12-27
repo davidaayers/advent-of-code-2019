@@ -93,10 +93,6 @@ func Part1(input string) string {
 
 func CountBugsRecursive(startingBoard Board, numMinutes int) int {
 	boards := map[int]Board{0: startingBoard}
-	//boards[-1] = NewBoardWithStartingTile(startingBoard.width, startingBoard.height, ".")
-	//boards[-1].grid[2][2].tile = "?"
-	//boards[1] = NewBoardWithStartingTile(startingBoard.width, startingBoard.height, ".")
-	//boards[1].grid[2][2].tile = "?"
 
 	for minute := 0; minute < numMinutes; minute++ {
 		newBoards := make(map[int]Board, 0)
